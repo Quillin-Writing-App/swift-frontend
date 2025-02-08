@@ -7,9 +7,6 @@
 
 import SwiftUI
 
-
-
-
 @main
 struct WritingApp: App {
     var body: some Scene {
@@ -17,4 +14,8 @@ struct WritingApp: App {
             WritingView()
         }
     }
+}
+
+#Preview {
+    WritingView()
 }
