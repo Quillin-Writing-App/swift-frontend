@@ -7,12 +7,14 @@
 
 import SwiftUI
 
+
+
+
 @main
-struct writing_appApp: App {
+struct WritingApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
-            // test
+            WritingView()
         }
     }
 }
