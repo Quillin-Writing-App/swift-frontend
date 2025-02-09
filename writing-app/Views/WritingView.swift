@@ -90,7 +90,7 @@ struct WritingView: View {
                             
                             if isSidebarVisible {
                                 SidebarView(messages: messages)
-                                    .frame(width: 500)
+                                    .frame(width: 450)
                                     .transition(.move(edge: .trailing))
                                     .zIndex(1)
                             }

@@ -58,6 +58,7 @@ struct HTMLView: UIViewRepresentable {
             body {
                 margin: 0;
                 padding: 8px;
+                color: white;
                 width: 100%;
                 box-sizing: border-box;
                 font-family: -apple-system, system-ui;
@@ -89,8 +90,7 @@ struct MarkdownMessagesView: View {
                         let html = result.html
                         
                         MessageView(html: html)
-                            .background(Color(.systemGray6))
-                            .cornerRadius(8)
+                            .background(Color(red: 0.07, green: 0.07, blue: 0.07))
                     }
                 }
             }
@@ -117,7 +117,7 @@ struct OvalTextFieldStyle: TextFieldStyle {
             .background(Color(red: 0.25, green: 0.25, blue: 0.25))
             .cornerRadius(20)
             .foregroundColor(Color.white)
-            .font(.system(size: 30))
+            .font(.system(size: 20))
     }
 }
 
@@ -131,9 +131,11 @@ struct SidebarView: View {
         VStack {
             // Header
             HStack {
-                Text("Help!")
+                Text("Hey Otto!")
                   .font(Font.custom("Inter", size: 30).weight(.light))
                   .foregroundColor(Color(red: 0.94, green: 0.94, blue: 0.92))
+                  .padding(.top, 30)
+                  .padding(.leading, 20)
                 Spacer()
             }
             .padding()
@@ -187,7 +189,7 @@ struct SidebarView: View {
             }
             .background(Color(red: 0.07, green: 0.07, blue: 0.07))
         }
-        .frame(width: 600) //FIXED WIDTH MAY REQUIRE CHANGE
+        .frame(width: 450) //FIXED WIDTH MAY REQUIRE CHANGE
         .background(Color(red: 0.07, green: 0.07, blue: 0.07))
     }
     
