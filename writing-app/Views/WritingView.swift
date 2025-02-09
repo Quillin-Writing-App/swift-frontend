@@ -66,7 +66,8 @@ struct WritingView: View {
     
     private var menuBar: some View {
         MenuBarView(
-            onNewNote: { viewModel.showingNewNoteAlert = true },
+            returnHome: {},
+            onNewNote: {},
             onUndo: { viewModel.canvasView.undoManager?.undo() },
             onRedo: { viewModel.canvasView.undoManager?.redo() },
             onExport: {
@@ -74,9 +75,9 @@ struct WritingView: View {
                 controller.canvasView = viewModel.canvasView
                 viewModel.exportDrawing(from: controller)
             },
-            onToggleSidebar: {
-                withAnimation { viewModel.isSidebarVisible.toggle() }
-            },
+//            onToggleSidebar: {
+//                withAnimation { viewModel.isSidebarVisible.toggle() }
+//            },
             editMode: $viewModel.editMode
         )
     }
@@ -93,15 +94,7 @@ struct WritingView: View {
     // MARK: - Body
     var body: some View {
         VStack(spacing: 0) {
-            MenuBarView(
-                returnHome: {},
-                onNewNote: { showingNewNoteAlert = true },
-                onUndo: { canvasView.undoManager?.undo() },
-                onRedo: { canvasView.undoManager?.redo() },
-                onExport: exportDrawing,
-//                onToggleSidebar: { withAnimation { isSidebarVisible.toggle() } },
-                editMode: $editMode
-            )
+            menuBar
             HStack(spacing: 0) {
                 canvas
                 sidebar
