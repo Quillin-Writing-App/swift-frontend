@@ -1,15 +1,36 @@
 import SwiftUI
+import UIKit
+
+extension UIColor {
+    convenience init(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        
+        if hexSanitized.hasPrefix("#") {
+            hexSanitized.remove(at: hexSanitized.startIndex)
+        }
+        
+        var rgb: UInt64 = 0
+        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+        
+        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+        let blue = CGFloat(rgb & 0x0000FF) / 255.0
+        self.init(red: red, green: green, blue: blue, alpha: 1.0)
+    }
+}
 
 // MARK: - MenuBar Button
 struct MenuBarButton: View {
     let systemImage: String
     let action: () -> Void
-    
-    
+    let toggled: Bool  // Only applies to certain buttons
+
     var body: some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .foregroundColor(.white)
+                .foregroundColor(toggled ? Color(UIColor(hex: "#FFFAFA")) : Color(UIColor(hex: "#F1EFEC")))
+                // Set to #FFFAFA when toggled, #F1EFEC by default
+                .font(.system(size: 20)) // Reduced font size to 20
         }
         .padding(.horizontal)
     }
@@ -18,66 +39,89 @@ struct MenuBarButton: View {
 // MARK: - MenuBar View
 struct MenuBarView: View {
     // MARK: Properties
+    var returnHome: () -> Void
     var onNewNote: () -> Void
     var onUndo: () -> Void
     var onRedo: () -> Void
     var onExport: () -> Void
-    var onToggleSidebar: () -> Void
-    
+
     @Binding var editMode: EditMode
 
     // MARK: View Components
-    private var fileButtons: some View {
-        HStack {
-            MenuBarButton(systemImage: "doc.badge.plus", action: onNewNote)
-            MenuBarButton(systemImage: "square.and.arrow.up", action: onExport)
-        }
-    }
     
-    private var editModeButton: some View {
-        MenuBarButton(
-            systemImage: editMode == .draw ? "pencil" : "hand.draw",
-            action: { editMode = editMode == .draw ? .panSelect : .draw }
-        )
+    private var homeButton: some View {
+        HStack {
+            MenuBarButton(systemImage: "house", action: returnHome, toggled: false) // Always white
+        }
     }
     
     private var historyButtons: some View {
         HStack {
-            MenuBarButton(systemImage: "arrow.uturn.backward", action: onUndo)
-            MenuBarButton(systemImage: "arrow.uturn.forward", action: onRedo)
+            MenuBarButton(systemImage: "arrow.uturn.backward", action: onUndo, toggled: false) // Always white
+            MenuBarButton(systemImage: "arrow.uturn.forward", action: onRedo, toggled: false) // Always white
         }
     }
     
-    private var sidebarButton: some View {
-            MenuBarButton(
-                systemImage: "sidebar.right",
-                action: onToggleSidebar
-            )
+    private var fileButtons: some View {
+        HStack {
+            MenuBarButton(systemImage: "doc.badge.plus", action: onNewNote, toggled: false) // Always white
+            MenuBarButton(systemImage: "square.and.arrow.up", action: onExport, toggled: false) // Always white
         }
+    }
+
+    private var writeModeButton: some View {
+        MenuBarButton(
+            systemImage: "pencil",
+            action: { editMode = .draw },
+            toggled: editMode == .draw
+        )
+    }
+
+    private var eraserModeButton: some View {
+        MenuBarButton(
+            systemImage: "eraser",
+            action: { editMode = .erase },
+            toggled: editMode == .erase
+        )
+    }
+
+    private var lassoModeButton: some View {
+        MenuBarButton(
+            systemImage: "lasso",
+            action: { editMode = .panSelect },
+            toggled: editMode == .panSelect
+        )
+    }
     
     // MARK: Body
     var body: some View {
         HStack {
-            fileButtons
+            homeButton
+            historyButtons
+            
+            Spacer()
+
+            writeModeButton
+            eraserModeButton
+            lassoModeButton
+            
             Spacer()
             
-            editModeButton
-            historyButtons
-            sidebarButton  
+            fileButtons
         }
         .padding()
-        .background(Color.black.opacity(0.9))
+        .background(Color(UIColor(red: 0x3F / 255, green: 0x3F / 255, blue: 0x3F / 255, alpha: 1.0)))
     }
 }
 
 // MARK: - Preview
 #Preview {
     MenuBarView(
+        returnHome: {},
         onNewNote: {},
         onUndo: {},
         onRedo: {},
         onExport: {},
-        onToggleSidebar: {},
         editMode: .constant(.draw)
     )
 }

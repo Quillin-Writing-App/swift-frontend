@@ -18,5 +18,6 @@ struct Note: Identifiable {
 
 enum EditMode {
     case draw
+    case erase
     case panSelect
 }

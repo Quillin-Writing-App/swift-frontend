@@ -19,7 +19,10 @@ class DrawingCanvasViewController: UIViewController {
             canvasView?.tool = PKInkingTool(.pen, color: .black, width: 3)
         case .panSelect:
             canvasView?.tool = PKLassoTool()
+        case .erase:
+            canvasView?.tool = PKEraserTool(.vector)
         }
+        
     }
     
     // MARK: - Gesture Setup
