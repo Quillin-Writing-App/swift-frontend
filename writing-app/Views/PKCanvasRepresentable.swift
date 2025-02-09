@@ -13,7 +13,8 @@ struct PKCanvasRepresentable: UIViewRepresentable {
     }
     
     func makeUIView(context: Context) -> PKCanvasView {
-        canvasView.tool = PKInkingTool(.pen, color: .black, width: 3)
+        canvasView.backgroundColor = UIColor(hex: "#292929")
+        canvasView.tool = PKInkingTool(.fountainPen, color: .white, width: 3)
         canvasView.drawingPolicy = .anyInput
         canvasView.backgroundColor = .clear
         
@@ -27,10 +28,13 @@ struct PKCanvasRepresentable: UIViewRepresentable {
     func updateUIView(_ uiView: PKCanvasView, context: Context) {
             switch editMode {
             case .draw:
-                uiView.tool = PKInkingTool(.pen, color: .black, width: 3)
+                canvasView.backgroundColor = UIColor(hex: "#292929")
+                uiView.tool = PKInkingTool(.fountainPen, color: .white, width: 3)
             case .erase:
+                canvasView.backgroundColor = UIColor(hex: "#292929")
                 uiView.tool = PKEraserTool(.vector)
             case .panSelect:
+                canvasView.backgroundColor = UIColor(hex: "#292929")
                 uiView.tool = PKLassoTool()
             }
         }

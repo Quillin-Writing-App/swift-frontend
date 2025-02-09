@@ -109,6 +109,19 @@ struct MessageView: View {
             .frame(height: dynamicHeight)
     }
 }
+
+struct OvalTextFieldStyle: TextFieldStyle {
+    func _body(configuration: TextField<Self._Label>) -> some View {
+        configuration
+            .padding(20)
+            .background(Color(red: 0.25, green: 0.25, blue: 0.25))
+            .cornerRadius(20)
+            .foregroundColor(Color.white)
+            .font(.system(size: 30))
+        
+    }
+}
+
 struct SidebarView: View {
     @StateObject private var chatService = ChatService()
     @State private var messageText = ""
@@ -119,13 +132,22 @@ struct SidebarView: View {
         VStack {
             // Header
             HStack {
-                Text("Chat")
-                    .font(.headline)
+                Text("Help!")
+                  .font(Font.custom("Inter", size: 30).weight(.light))
+                  .foregroundColor(Color(red: 0.94, green: 0.94, blue: 0.92))
                 Spacer()
             }
             .padding()
-            .background(Color(.systemGray6))
+            .background(Color(red: 0.07, green: 0.07, blue: 0.07))
             
+            Rectangle()
+              .foregroundColor(.clear)
+              .frame(width: 400, height: 1)
+              .background(Color(red: 0.94, green: 0.94, blue: 0.92))
+              .overlay(Rectangle()
+                .stroke(.black, lineWidth: 0.50))
+
+
             // Chat content
             MarkdownMessagesView(messages: messages)
             
@@ -134,8 +156,13 @@ struct SidebarView: View {
                 Divider()
                 HStack {
                     TextField("Type a message...", text: $messageText)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .foregroundColor(Color.white)
                         .disabled(isLoading)
+                        .textFieldStyle(OvalTextFieldStyle())
+                          // Increases the input text size
+                        
+                        
+
                     
                     Button(action: sendMessage) {
                         if isLoading {
@@ -148,11 +175,13 @@ struct SidebarView: View {
                     }
                     .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
                 }
+                .background(Color(red: 0.07, green: 0.07, blue: 0.07))
                 .padding([.horizontal, .bottom])
             }
+            .background(Color(red: 0.07, green: 0.07, blue: 0.07))
         }
-        .frame(width: 500)
-        .background(Color(.systemBackground))
+        .frame(width: 600) //FIXED WIDTH MAY REQUIRE CHANGE
+        .background(Color(red: 0.07, green: 0.07, blue: 0.07))
     }
     
     private func sendMessage() {
@@ -187,5 +216,5 @@ struct SidebarView: View {
 }
 
 //#Preview {
-//    SidebarView()
+//    SidebarView(messages: ["dfsf"])
 //}

@@ -65,8 +65,8 @@ struct MenuBarView: View {
     
     private var fileButtons: some View {
         HStack {
-            MenuBarButton(systemImage: "doc.badge.plus", action: onNewNote, toggled: false) // Always white
-            MenuBarButton(systemImage: "square.and.arrow.up", action: onExport, toggled: false) // Always white
+            MenuBarButton(systemImage: "brain", action: onNewNote, toggled: false) // Always white
+            MenuBarButton(systemImage: "cpu", action: onExport, toggled: false) // Always white
         }
     }
 
