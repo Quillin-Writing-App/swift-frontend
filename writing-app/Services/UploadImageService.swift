@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import PencilKit
 
 enum ImageUploadError: Error {
     case invalidImage
@@ -11,6 +12,41 @@ enum ImageUploadError: Error {
 class ImageUploadService {
     private let baseURL = "http://localhost:8000"
     
+    // MARK: - Drawing Export Methods
+    func exportEntireCanvas(_ canvasView: PKCanvasView) -> UIImage {
+        let renderer = UIGraphicsImageRenderer(bounds: canvasView.bounds)
+        return renderer.image { context in
+            canvasView.drawHierarchy(in: canvasView.bounds, afterScreenUpdates: true)
+        }
+    }
+    
+    func exportSelectedStrokes(from canvasView: PKCanvasView, indices: [Int]) -> UIImage {
+        // Get the selected strokes
+        let selectedStrokes = indices.compactMap { index -> PKStroke? in
+            guard index < canvasView.drawing.strokes.count else { return nil }
+            return canvasView.drawing.strokes[index]
+        }
+        
+        // Calculate bounds for selected strokes
+        let selectedBounds = selectedStrokes.reduce(CGRect.null) { result, stroke in
+            return result.union(stroke.renderBounds)
+        }.insetBy(dx: -20, dy: -20) // Add padding
+        
+        // Create and draw the image
+        let renderer = UIGraphicsImageRenderer(bounds: selectedBounds)
+        return renderer.image { context in
+            // Set white background
+            UIColor.white.setFill()
+            context.fill(selectedBounds)
+            
+            // Draw the selected strokes
+            let selectedDrawing = PKDrawing(strokes: selectedStrokes)
+            selectedDrawing.image(from: selectedBounds, scale: UIScreen.main.scale)
+                .draw(in: selectedBounds)
+        }
+    }
+    
+    // MARK: - Upload Methods
     func uploadImage(_ image: UIImage) async throws -> String {
         guard let imageData = image.jpegData(compressionQuality: 0.8) else {
             throw ImageUploadError.invalidImage

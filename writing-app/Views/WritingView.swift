@@ -2,73 +2,113 @@ import SwiftUI
 import PencilKit
 import Foundation
 
-struct WritingView: View {
-    // MARK: - State
-    @State private var canvasView = PKCanvasView()
-    @State private var notes: [Note] = []
-    @State private var currentNoteIndex: Int? = nil
-    @State private var showingNewNoteAlert = false
-    @State private var newNoteTitle = ""
-    @State private var editMode: EditMode = .draw
-    @State private var showingExportSheet = false
-    @State private var exportImage: UIImage? = nil
-    @State private var isUploading = false
-    @State private var uploadError: String? = nil
-    @State private var uploadedUrl: String? = nil
-    @State private var isSidebarVisible = false
+// MARK: - Writing View Model
+class WritingViewModel: ObservableObject {
+    @Published var canvasView = PKCanvasView()
+    @Published var notes: [Note] = []
+    @Published var currentNoteIndex: Int? = nil
+    @Published var showingNewNoteAlert = false
+    @Published var newNoteTitle = ""
+    @Published var editMode: EditMode = .draw
+    @Published var showingExportSheet = false
+    @Published var isUploading = false
+    @Published var uploadError: String? = nil
+    @Published var uploadedUrl: String? = nil
+    @Published var isSidebarVisible = false
     
+    private let imageService = ImageUploadService()
     
-    // MARK: - Method
-    private func exportDrawing() {
-            let renderer = UIGraphicsImageRenderer(bounds: canvasView.bounds)
-            let image = renderer.image { context in
-                canvasView.drawHierarchy(in: canvasView.bounds, afterScreenUpdates: true)
-            }
-            
-            // Upload the image
-            isUploading = true
-            
-            Task {
-                do {
-                    let imageUploadService = ImageUploadService()
-                    let url = try await imageUploadService.uploadImage(image)
-                    await MainActor.run {
-                        isUploading = false
-                        uploadedUrl = url
-                        showingExportSheet = true
-                    }
-                } catch {
-                    await MainActor.run {
-                        isUploading = false
-                        uploadError = error.localizedDescription
-                    }
-                }
-            }
+    func exportDrawing(from controller: DrawingCanvasViewController) {
+        let (selectedIndices, _) = controller.getLassoSelection()
+        
+        let exportedImage = if selectedIndices.isEmpty {
+            imageService.exportEntireCanvas(canvasView)
+        } else {
+            imageService.exportSelectedStrokes(from: canvasView, indices: selectedIndices)
+        }
+        
+        uploadImage(exportedImage)
     }
-    // MARK: - Body
-    var body: some View {
-        VStack(spacing: 0) {
-            MenuBarView(
-                onNewNote: { showingNewNoteAlert = true },
-                onUndo: { canvasView.undoManager?.undo() },
-                onRedo: { canvasView.undoManager?.redo() },
-                onExport: exportDrawing,
-                onToggleSidebar: { withAnimation { isSidebarVisible.toggle() } },
-                editMode: $editMode
-            )
-            HStack(spacing: 0) {
-                PKCanvasRepresentable(canvasView: $canvasView, editMode: $editMode)
-                    .ignoresSafeArea()
     
-                if isSidebarVisible {
-                    SidebarView()
-                        .transition(.move(edge: .trailing))
+    private func uploadImage(_ image: UIImage) {
+        isUploading = true
+        
+        Task {
+            do {
+                let url = try await imageService.uploadImage(image)
+                await MainActor.run {
+                    isUploading = false
+                    uploadedUrl = url
+                    showingExportSheet = true
+                }
+            } catch {
+                await MainActor.run {
+                    isUploading = false
+                    uploadError = error.localizedDescription
                 }
             }
         }
     }
 }
 
+// MARK: - Writing View
+struct WritingView: View {
+    @StateObject private var viewModel = WritingViewModel()
+    
+    // MARK: - View Components
+    private var canvas: some View {
+        PKCanvasRepresentable(
+            canvasView: $viewModel.canvasView,
+            editMode: $viewModel.editMode
+        )
+        .ignoresSafeArea()
+    }
+    
+    private var menuBar: some View {
+        MenuBarView(
+            onNewNote: { viewModel.showingNewNoteAlert = true },
+            onUndo: { viewModel.canvasView.undoManager?.undo() },
+            onRedo: { viewModel.canvasView.undoManager?.redo() },
+            onExport: {
+                let controller = DrawingCanvasViewController()
+                controller.canvasView = viewModel.canvasView
+                viewModel.exportDrawing(from: controller)
+            },
+            onToggleSidebar: {
+                withAnimation { viewModel.isSidebarVisible.toggle() }
+            },
+            editMode: $viewModel.editMode
+        )
+    }
+    
+    private var sidebar: some View {
+        Group {
+            if viewModel.isSidebarVisible {
+                SidebarView()
+                    .transition(.move(edge: .trailing))
+            }
+        }
+    }
+    
+    // MARK: - Body
+    var body: some View {
+        VStack(spacing: 0) {
+            menuBar
+            HStack(spacing: 0) {
+                canvas
+                sidebar
+            }
+        }
+        .alert("New Note", isPresented: $viewModel.showingNewNoteAlert) {
+            // Add alert actions here
+        }
+        .sheet(isPresented: $viewModel.showingExportSheet) {
+            // Add export sheet content here
+        }
+    }
+}
+
+// MARK: - Preview
 #Preview {
     WritingView()
 }
