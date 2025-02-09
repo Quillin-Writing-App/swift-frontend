@@ -93,7 +93,15 @@ struct WritingView: View {
     // MARK: - Body
     var body: some View {
         VStack(spacing: 0) {
-            menuBar
+            MenuBarView(
+                returnHome: {},
+                onNewNote: { showingNewNoteAlert = true },
+                onUndo: { canvasView.undoManager?.undo() },
+                onRedo: { canvasView.undoManager?.redo() },
+                onExport: exportDrawing,
+//                onToggleSidebar: { withAnimation { isSidebarVisible.toggle() } },
+                editMode: $editMode
+            )
             HStack(spacing: 0) {
                 canvas
                 sidebar
