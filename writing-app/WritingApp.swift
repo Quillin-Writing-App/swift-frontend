@@ -9,7 +9,10 @@ import SwiftUI
 
 @main
 struct WritingApp: App {
+    
+    
     var body: some Scene {
+        
         WindowGroup {
             WritingView()
         }

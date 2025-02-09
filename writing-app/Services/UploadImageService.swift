@@ -9,6 +9,13 @@ enum ImageUploadError: Error {
     case serverError(Int)
 }
 
+enum TextUploadError: Error {
+    case invalidText
+    case networkError(Error)
+    case invalidResponse
+    case serverError(Int)
+}
+
 class ImageUploadService {
     private let baseURL = "https://quillin.up.railway.app/explain"
     
@@ -84,6 +91,37 @@ class ImageUploadService {
             return try JSONDecoder().decode(ExplainResponse.self, from: data)
         } catch {
             throw ImageUploadError.networkError(error)
+        }
+    }
+    
+    func uploadText(_ text: String) async throws -> ExplainResponse {
+        guard let url = URL(string: baseURL) else {
+            throw TextUploadError.invalidResponse
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let json: [String: Any] = ["text": text]
+        let jsonData = try? JSONSerialization.data(withJSONObject: json)
+        
+        request.httpBody = jsonData
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw TextUploadError.invalidResponse
+            }
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
+                throw TextUploadError.serverError(httpResponse.statusCode)
+            }
+            
+            return try JSONDecoder().decode(ExplainResponse.self, from: data)
+        } catch {
+            throw TextUploadError.networkError(error)
         }
     }
 }

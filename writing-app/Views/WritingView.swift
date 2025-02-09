@@ -23,6 +23,7 @@ struct WritingView: View {
     @StateObject private var drawingState = DrawingState()
     
     @State private var messages: [String] = []  // Add this line
+    @State private var threeComplementary: [String] = []
     
     private let imageService = ImageUploadService()
     // MARK: - Method
@@ -35,6 +36,8 @@ struct WritingView: View {
                 imageService.exportSelectedStrokes(from: canvasView, indices: selectedIndices)
             }
             
+        
+        
             uploadImage(exportedImage)
         }
         
@@ -48,6 +51,10 @@ struct WritingView: View {
                         isUploading = false
                         // Add the explanation to messages
                         messages.append("Assistant: " + response.explanation)
+                        
+                        threeComplementary.append(response.clarifying_prompts[0])
+                        threeComplementary.append(response.clarifying_prompts[1])
+                        threeComplementary.append(response.clarifying_prompts[2])
                         
                         // Update clarifying prompts
                         //clarifyingPrompts = response.clarifying_prompts
@@ -89,7 +96,7 @@ struct WritingView: View {
                                 .ignoresSafeArea()
                             
                             if isSidebarVisible {
-                                SidebarView(messages: messages)
+                                SidebarView(messages: messages, three: threeComplementary)
                                     .frame(width: 450)
                                     .transition(.move(edge: .trailing))
                                     .zIndex(1)

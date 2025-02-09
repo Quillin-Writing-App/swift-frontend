@@ -121,11 +121,18 @@ struct OvalTextFieldStyle: TextFieldStyle {
     }
 }
 
+
+
 struct SidebarView: View {
     @StateObject private var chatService = ChatService()
     @State private var messageText = ""
     @State private var isLoading = false
     var messages: [String]  // Change from @State to let
+    var three: [String]
+    
+    func performAction( value: String ) {
+        uploadText(text: value);
+    }
     
     var body: some View {
         VStack {
@@ -152,6 +159,45 @@ struct SidebarView: View {
             // Chat content
             MarkdownMessagesView(messages: messages)
             
+            Button(action: {
+                performAction(value: three[0]) // Call the function when text is pressed
+                    }) {
+                        Text(three[0]) // Display each string
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.leading)
+                    }
+            
+            Divider()
+                .frame(height: 1) // Customize the thickness of the line
+                .background(Color.gray) // Customize the color of the line
+            Button(action: {
+                        performAction(value: three[1]) // Call the function when text is pressed
+                    }) {
+                        Text(three[1]) // Display each string
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.leading)
+                    }
+                
+            Divider()
+                .frame(height: 1) // Customize the thickness of the line
+                .background(Color.gray) // Customize the color of the line
+                .padding(.horizontal)
+
+            Button(action: {
+                        performAction(value: three[2]) // Call the function when text is pressed
+                    }) {
+                        Text(three[2]) // Display each string
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.leading)
+                    }
+            
+            Divider()
+                .frame(height: 1) // Customize the thickness of the line
+                .background(Color.gray) // Customize the color of the line
+                .padding(.horizontal)
+
+
+            
             // Input area
             VStack(spacing: 8) {
                 Divider()
@@ -169,9 +215,6 @@ struct SidebarView: View {
 
                     
                           // Increases the input text size
-                        
-                        
-
                     
                     Button(action: sendMessage) {
                         if isLoading {
