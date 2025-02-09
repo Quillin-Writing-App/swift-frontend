@@ -14,8 +14,26 @@ struct HTMLView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: WKWebView, context: Context) {
-        uiView.loadHTMLString(html, baseURL: nil)
-    }
+            // Add configuration to make content fill width
+            let config = """
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body {
+                    margin: 0;
+                    padding: 8px;
+                    height: 100%;
+                    width: 100%;
+                    box-sizing: border-box;
+                    font-family: -apple-system, system-ui;
+                }
+                * {
+                    max-width: 100%;
+                }
+            </style>
+            """
+            let fullHTML = "\(config)\(html)"
+            uiView.loadHTMLString(fullHTML, baseURL: nil)
+        }
 }
 
 struct MarkdownMessagesView: View {
