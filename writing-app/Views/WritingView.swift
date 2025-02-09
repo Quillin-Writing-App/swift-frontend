@@ -55,7 +55,7 @@ struct WritingView: View {
                 }
             }
         }
-    // MARK: - Body
+    // MARK: - Bodyy
     var body: some View {
         VStack(spacing: 0) {
             MenuBarView(
