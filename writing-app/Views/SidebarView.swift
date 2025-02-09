@@ -127,11 +127,15 @@ struct SidebarView: View {
     @StateObject private var chatService = ChatService()
     @State private var messageText = ""
     @State private var isLoading = false
-    var messages: [String]  // Change from @State to let
-    var three: [String]
+    @State private var uploadError: String? = nil
+    @State private var explanation: String? = nil
+    @Binding var messages: [String]  // Bind messages array so it can be updated
+    @Binding var three: [String]
+    
+    private let imageService = ImageUploadService();
     
     func performAction( value: String ) {
-        uploadText(text: value);
+        uploadText(value);
     }
     
     var body: some View {
@@ -235,6 +239,30 @@ struct SidebarView: View {
         .frame(width: 450) //FIXED WIDTH MAY REQUIRE CHANGE
         .background(Color(red: 0.07, green: 0.07, blue: 0.07))
     }
+    
+    private func uploadText(_ text: String) {
+            isLoading = true
+            Task {
+                do {
+                    let response = try await imageService.uploadText(text)
+                    await MainActor.run {
+                        isLoading = false
+                        explanation = response.explanation
+                        messages.append("Assistant: " + response.explanation)
+                        
+                        three = []
+                        three.append(response.clarifying_prompts[0])
+                        three.append(response.clarifying_prompts[1])
+                        three.append(response.clarifying_prompts[2])
+                    }
+                } catch {
+                    await MainActor.run {
+                        isLoading = false
+                        uploadError = error.localizedDescription
+                    }
+                }
+            }
+        }
     
     private func sendMessage() {
         let message = messageText.trimmingCharacters(in: .whitespacesAndNewlines)

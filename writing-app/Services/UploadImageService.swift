@@ -17,11 +17,17 @@ enum TextUploadError: Error {
 }
 
 class ImageUploadService {
-    private let baseURL = "https://quillin.up.railway.app/explain"
+    private let explainURL = "https://quillin.up.railway.app/explain"
+    private let clarifyURL = "https://quillin.up.railway.app/clarify"
+    private let memeURL = "https://quillin.up.railway.app/fenty_wap"
     
     struct ExplainResponse: Codable {
         let explanation: String
         let clarifying_prompts: [String]
+    }
+    
+    struct MemeResponse: Codable {
+        let url: String  // The JSON key you're expecting to receive
     }
     
     // MARK: - Drawing Export Methods
@@ -59,7 +65,7 @@ class ImageUploadService {
             throw ImageUploadError.invalidImage
         }
         
-        guard let url = URL(string: baseURL) else {
+        guard let url = URL(string: explainURL) else {
             throw ImageUploadError.invalidResponse
         }
         
@@ -94,8 +100,51 @@ class ImageUploadService {
         }
     }
     
+    // Upload method for fenty_wap API
+        func uploadMemeImage(_ image: UIImage) async throws -> MemeResponse {
+            guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+                throw ImageUploadError.invalidImage
+            }
+            
+            guard let url = URL(string: memeURL) else {
+                throw ImageUploadError.invalidResponse
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("multipart/form-data", forHTTPHeaderField: "Content-Type")
+            
+            let boundary = "Boundary-\(UUID().uuidString)"
+            request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+            
+            var body = Data()
+            body.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"file\"; filename=\"image.jpg\"\r\n".data(using: .utf8)!)
+            body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+            body.append(imageData)
+            body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+            
+            request.httpBody = body
+            
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    throw ImageUploadError.invalidResponse
+                }
+                
+                guard (200...299).contains(httpResponse.statusCode) else {
+                    throw ImageUploadError.serverError(httpResponse.statusCode)
+                }
+                
+                return try JSONDecoder().decode(MemeResponse.self, from: data)
+            } catch {
+                throw ImageUploadError.networkError(error)
+            }
+        }
+    
     func uploadText(_ text: String) async throws -> ExplainResponse {
-        guard let url = URL(string: baseURL) else {
+        guard let url = URL(string: clarifyURL) else {
             throw TextUploadError.invalidResponse
         }
         

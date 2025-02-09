@@ -96,7 +96,7 @@ struct WritingView: View {
                                 .ignoresSafeArea()
                             
                             if isSidebarVisible {
-                                SidebarView(messages: messages, three: threeComplementary)
+                                SidebarView(messages: $messages, three: $threeComplementary)
                                     .frame(width: 450)
                                     .transition(.move(edge: .trailing))
                                     .zIndex(1)
