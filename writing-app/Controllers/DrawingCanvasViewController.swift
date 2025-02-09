@@ -11,6 +11,41 @@ class DrawingCanvasViewController: UIViewController {
             updateToolForMode()
         }
     }
+    func getLassoSelection() -> ([Int],[Int]) {
+        // Make a backup of the current PKCanvasView drawing state
+        guard let currentDrawingStrokes = canvasView?.drawing.strokes else {
+            return ([], [])
+        }
+        
+        // Issue a delete command so the selected strokes are deleted
+        UIApplication.shared.sendAction(#selector(delete), to: nil, from: self, for: nil)
+        
+        // Store the drawing with the selected strokes removed
+        guard let unselectedStrokes = canvasView?.drawing.strokes else {
+            return ([], [])
+        }
+        
+        // Put the original strokes back in the PKCanvasView
+        canvasView?.drawing.strokes = currentDrawingStrokes
+        
+        // Get the indices of selected strokes using sequenceContainsStroke
+        var selectedIndices: [Int] = []
+        var unselectedIndices: [Int] = []
+        
+        for i in 0..<currentDrawingStrokes.count {
+            let currentStroke = currentDrawingStrokes[i]
+            if unselectedStrokes.contains(where: { stroke in
+                // Compare relevant properties of the strokes
+                return stroke.renderBounds == currentStroke.renderBounds &&
+                       stroke.transform == currentStroke.transform
+            }) {
+                unselectedIndices.append(i)
+            } else {
+                selectedIndices.append(i)
+            }
+        }
+        return (selectedIndices, unselectedIndices)
+    }
     
     // MARK: - Tool Management
     private func updateToolForMode() {
