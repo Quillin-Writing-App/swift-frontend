@@ -23,7 +23,15 @@ struct PKCanvasRepresentable: UIViewRepresentable {
         return canvasView
     }
     
+
     func updateUIView(_ uiView: PKCanvasView, context: Context) {
-        drawingController.editMode = editMode
-    }
+            switch editMode {
+            case .draw:
+                uiView.tool = PKInkingTool(.pen, color: .black, width: 3)
+            case .erase:
+                uiView.tool = PKEraserTool(.vector)
+            case .panSelect:
+                uiView.tool = PKLassoTool()
+            }
+        }
 }
