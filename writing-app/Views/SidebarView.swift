@@ -118,7 +118,6 @@ struct OvalTextFieldStyle: TextFieldStyle {
             .cornerRadius(20)
             .foregroundColor(Color.white)
             .font(.system(size: 30))
-        
     }
 }
 
@@ -154,11 +153,19 @@ struct SidebarView: View {
             // Input area
             VStack(spacing: 8) {
                 Divider()
-                HStack {
-                    TextField("Type a message...", text: $messageText)
-                        .foregroundColor(Color.white)
-                        .disabled(isLoading)
-                        .textFieldStyle(OvalTextFieldStyle())
+                ZStack (alignment: .leading) {
+                    if messageText.isEmpty {
+                        Text("Type a message...")
+                            .foregroundColor(Color(red: 0.67, green: 0.67, blue: 0.67))
+                            .font(.system(size: 20))
+                            .padding(.leading, 35)
+                    }
+                    TextField("", text: $messageText)
+                        .foregroundColor(Color(red: 0.94, green: 0.94, blue: 0.92))
+                        .font(.system(size: 20))
+                        .padding(.leading, 35)
+
+                    
                           // Increases the input text size
                         
                         
