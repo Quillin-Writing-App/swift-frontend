@@ -1,50 +1,58 @@
-//
-//  SendChatService.swift
-//  writing-app
-//
-//  Created by Otto Kunkel on 2/8/25.
-//
-
 import Foundation
 
-enum MarkdownError: Error {
+enum ChatError: Error {
     case networkError(Error)
     case invalidResponse
     case serverError(Int)
+    case encodingError
 }
 
-class MarkdownService {
+class ChatService: ObservableObject {
     private let baseURL = "http://localhost:8000"
     
-    func fetchMarkdown() async throws -> String {
-        // Create request URL
-        guard let url = URL(string: "\(baseURL)/markdown") else {
-            throw MarkdownError.invalidResponse
+    func sendMessage(_ message: String) async throws -> String {
+        guard let url = URL(string: "\(baseURL)/chat") else {
+            throw ChatError.invalidResponse
         }
         
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        // Create URL components to send message as form data
+        var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)!
+        urlComponents.queryItems = [
+            URLQueryItem(name: "message", value: message)
+        ]
+        
+        var request = URLRequest(url: urlComponents.url!)
+        request.httpMethod = "POST"
         
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw MarkdownError.invalidResponse
+            // Debug: Print the response
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("Server response: \(responseString)")
             }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw ChatError.invalidResponse
+            }
+            
+            print("Response status code: \(httpResponse.statusCode)")
             
             guard (200...299).contains(httpResponse.statusCode) else {
-                throw MarkdownError.serverError(httpResponse.statusCode)
+                throw ChatError.serverError(httpResponse.statusCode)
             }
             
-            // Convert response data to string
-            guard let markdownContent = String(data: data, encoding: .utf8) else {
-                throw MarkdownError.invalidResponse
+            // Parse the response according to the API format
+            struct ChatResponse: Codable {
+                let content: String
             }
             
-            return markdownContent
+            let jsonResponse = try JSONDecoder().decode(ChatResponse.self, from: data)
+            return jsonResponse.content
+            
         } catch {
-            throw MarkdownError.networkError(error)
+            print("Error details: \(error)")
+            throw ChatError.networkError(error)
         }
     }
 }

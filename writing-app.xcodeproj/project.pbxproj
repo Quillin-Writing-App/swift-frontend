@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D9A051282D586D86001800AE /* Ink in Frameworks */ = {isa = PBXBuildFile; productRef = D9A051272D586D86001800AE /* Ink */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		D91680CE2D57DD320054075C /* writing-app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "writing-app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D9A051282D586D86001800AE /* Ink in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = "writing-app";
 			packageProductDependencies = (
+				D9A051272D586D86001800AE /* Ink */,
 			);
 			productName = "writing-app";
 			productReference = D91680CE2D57DD320054075C /* writing-app.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = D91680C52D57DD320054075C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D9A051262D586D86001800AE /* XCRemoteSwiftPackageReference "Ink" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D91680CF2D57DD320054075C /* Products */;
 			projectDirPath = "";
@@ -328,6 +337,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D9A051262D586D86001800AE /* XCRemoteSwiftPackageReference "Ink" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/JohnSundell/Ink";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D9A051272D586D86001800AE /* Ink */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D9A051262D586D86001800AE /* XCRemoteSwiftPackageReference "Ink" */;
+			productName = Ink;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D91680C62D57DD320054075C /* Project object */;
 }
