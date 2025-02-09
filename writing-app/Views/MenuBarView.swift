@@ -44,8 +44,9 @@ struct MenuBarView: View {
     var onUndo: () -> Void
     var onRedo: () -> Void
     var onExport: () -> Void
+    var onToggleSidebar: () -> Void
 
-    @Binding var editMode: EditMode
+    @ObservedObject var drawingState: DrawingState
 
     // MARK: View Components
     
@@ -72,27 +73,33 @@ struct MenuBarView: View {
     private var writeModeButton: some View {
         MenuBarButton(
             systemImage: "pencil",
-            action: { editMode = .draw },
-            toggled: editMode == .draw
+            action: { drawingState.editMode = .draw },
+            toggled: drawingState.editMode == .draw
         )
     }
 
     private var eraserModeButton: some View {
         MenuBarButton(
             systemImage: "eraser",
-            action: { editMode = .erase },
-            toggled: editMode == .erase
+            action: { drawingState.editMode = .erase },
+            toggled: drawingState.editMode == .erase
         )
     }
 
     private var lassoModeButton: some View {
         MenuBarButton(
             systemImage: "lasso",
-            action: { editMode = .panSelect },
-            toggled: editMode == .panSelect
+            action: { drawingState.editMode = .panSelect },
+            toggled: drawingState.editMode == .panSelect
         )
     }
-    
+    private var sidebarButton: some View {
+                MenuBarButton(
+                    systemImage: "sidebar.right",
+                    action: onToggleSidebar,
+                    toggled: false
+                )
+            }
     // MARK: Body
     var body: some View {
         HStack {
@@ -108,6 +115,7 @@ struct MenuBarView: View {
             Spacer()
             
             fileButtons
+            sidebarButton
         }
         .padding()
         .background(Color(UIColor(red: 0x3F / 255, green: 0x3F / 255, blue: 0x3F / 255, alpha: 1.0)))
@@ -115,13 +123,14 @@ struct MenuBarView: View {
 }
 
 // MARK: - Preview
-#Preview {
-    MenuBarView(
-        returnHome: {},
-        onNewNote: {},
-        onUndo: {},
-        onRedo: {},
-        onExport: {},
-        editMode: .constant(.draw)
-    )
-}
+//#Preview {
+//    MenuBarView(
+//        returnHome: {},
+//        onNewNote: {},
+//        onUndo: {},
+//        onRedo: {},
+//        onExport: {},
+//        onToggleSidebar: {},
+//        editMode: .constant(.draw)
+//    )
+//}
