@@ -10,7 +10,12 @@ enum ImageUploadError: Error {
 }
 
 class ImageUploadService {
-    private let baseURL = "http://localhost:8000"
+    private let baseURL = "https://quillin.up.railway.app/explain"
+    
+    struct ExplainResponse: Codable {
+        let explanation: String
+        let clarifying_prompts: [String]
+    }
     
     // MARK: - Drawing Export Methods
     func exportEntireCanvas(_ canvasView: PKCanvasView) -> UIImage {
@@ -21,25 +26,20 @@ class ImageUploadService {
     }
     
     func exportSelectedStrokes(from canvasView: PKCanvasView, indices: [Int]) -> UIImage {
-        // Get the selected strokes
         let selectedStrokes = indices.compactMap { index -> PKStroke? in
             guard index < canvasView.drawing.strokes.count else { return nil }
             return canvasView.drawing.strokes[index]
         }
         
-        // Calculate bounds for selected strokes
         let selectedBounds = selectedStrokes.reduce(CGRect.null) { result, stroke in
             return result.union(stroke.renderBounds)
-        }.insetBy(dx: -20, dy: -20) // Add padding
+        }.insetBy(dx: -20, dy: -20)
         
-        // Create and draw the image
         let renderer = UIGraphicsImageRenderer(bounds: selectedBounds)
         return renderer.image { context in
-            // Set white background
             UIColor.white.setFill()
             context.fill(selectedBounds)
             
-            // Draw the selected strokes
             let selectedDrawing = PKDrawing(strokes: selectedStrokes)
             selectedDrawing.image(from: selectedBounds, scale: UIScreen.main.scale)
                 .draw(in: selectedBounds)
@@ -47,13 +47,12 @@ class ImageUploadService {
     }
     
     // MARK: - Upload Methods
-    func uploadImage(_ image: UIImage) async throws -> String {
+    func uploadImage(_ image: UIImage) async throws -> ExplainResponse {
         guard let imageData = image.jpegData(compressionQuality: 0.8) else {
             throw ImageUploadError.invalidImage
         }
         
-        // Create upload URL
-        guard let url = URL(string: "\(baseURL)/upload") else {
+        guard let url = URL(string: baseURL) else {
             throw ImageUploadError.invalidResponse
         }
         
@@ -62,10 +61,7 @@ class ImageUploadService {
         request.httpMethod = "POST"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         
-        // Create multipart form data
         var body = Data()
-        
-        // Add image data
         body.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"file\"; filename=\"drawing.jpg\"\r\n".data(using: .utf8)!)
         body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
@@ -85,13 +81,7 @@ class ImageUploadService {
                 throw ImageUploadError.serverError(httpResponse.statusCode)
             }
             
-            // Parse response
-            let responseDict = try JSONDecoder().decode([String: String].self, from: data)
-            guard let imageUrl = responseDict["url"] else {
-                throw ImageUploadError.invalidResponse
-            }
-            
-            return imageUrl
+            return try JSONDecoder().decode(ExplainResponse.self, from: data)
         } catch {
             throw ImageUploadError.networkError(error)
         }
