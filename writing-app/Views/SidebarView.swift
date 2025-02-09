@@ -112,8 +112,8 @@ struct MessageView: View {
 struct SidebarView: View {
     @StateObject private var chatService = ChatService()
     @State private var messageText = ""
-    @State private var messages: [String] = []
     @State private var isLoading = false
+    var messages: [String]  // Change from @State to let
     
     var body: some View {
         VStack {
@@ -160,7 +160,7 @@ struct SidebarView: View {
         guard !message.isEmpty else { return }
         
         // Add user message to chat
-        messages.append("You: " + message)
+        //messages.append("You: " + message)
         
         // Clear input field
         messageText = ""
@@ -168,24 +168,24 @@ struct SidebarView: View {
         
         // Send message using ChatService
         Task {
-            do {
-                let response = try await chatService.sendMessage(message)
-                // Update UI on main thread
-                await MainActor.run {
-                    messages.append("Assistant: " + response)
-                    isLoading = false
-                }
-            } catch {
-                await MainActor.run {
-                    messages.append("Error: Failed to send message")
-                    isLoading = false
-                }
-                print("Error sending message: \(error)")
-            }
+//            do {
+//                //let response = try await chatService.sendMessage(message)
+//                // Update UI on main thread
+//                await MainActor.run {
+//                    //messages.append("Assistant: " + response)
+//                    isLoading = false
+//                }
+//            } catch {
+//                await MainActor.run {
+//                    //messages.append("Error: Failed to send message")
+//                    isLoading = false
+//                }
+//                print("Error sending message: \(error)")
+//            }
         }
     }
 }
 
-#Preview {
-    SidebarView()
-}
+//#Preview {
+//    SidebarView()
+//}

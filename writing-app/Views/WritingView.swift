@@ -22,6 +22,8 @@ struct WritingView: View {
     @State private var isSidebarVisible = false
     @StateObject private var drawingState = DrawingState()
     
+    @State private var messages: [String] = []  // Add this line
+    
     private let imageService = ImageUploadService()
     // MARK: - Method
     func exportDrawing(from controller: DrawingCanvasViewController) {
@@ -41,10 +43,21 @@ struct WritingView: View {
             
             Task {
                 do {
-                    let url = try await imageService.uploadImage(image)
+                    let response = try await imageService.uploadImage(image)
                     await MainActor.run {
                         isUploading = false
-                        uploadedUrl = url
+                        // Add the explanation to messages
+                        messages.append("Assistant: " + response.explanation)
+                        
+                        // Update clarifying prompts
+                        //clarifyingPrompts = response.clarifying_prompts
+                        
+                        // Show the sidebar if it's not already visible
+                        if !isSidebarVisible {
+                            withAnimation {
+                                isSidebarVisible = true
+                            }
+                        }
                         showingExportSheet = true
                     }
                 } catch {
@@ -76,7 +89,7 @@ struct WritingView: View {
                                 .ignoresSafeArea()
                             
                             if isSidebarVisible {
-                                SidebarView()
+                                SidebarView(messages: messages)
                                     .frame(width: 500)
                                     .transition(.move(edge: .trailing))
                                     .zIndex(1)
