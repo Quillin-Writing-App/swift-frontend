@@ -5,10 +5,16 @@ enum ChatError: Error {
     case invalidResponse
     case serverError(Int)
     case encodingError
+    case missingAPIKey
 }
 
 class ChatService: ObservableObject {
     private let baseURL = "http://localhost:8000"
+    
+    // Function to fetch API key from environment variables
+    func getAPIKey() -> String? {
+        return ProcessInfo.processInfo.environment["API_KEY"]
+    }
     
     func sendMessage(_ message: String) async throws -> String {
         guard let url = URL(string: "\(baseURL)/chat") else {
@@ -23,6 +29,12 @@ class ChatService: ObservableObject {
         
         var request = URLRequest(url: urlComponents.url!)
         request.httpMethod = "POST"
+        
+        if let apiKey = getAPIKey() {
+                request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            } else {
+                throw ChatError.missingAPIKey
+            }
         
         do {
             let (data, response) = try await URLSession.shared.data(for: request)

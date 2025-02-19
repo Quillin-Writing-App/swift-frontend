@@ -7,6 +7,7 @@ enum ImageUploadError: Error {
     case networkError(Error)
     case invalidResponse
     case serverError(Int)
+    case missingAPIKey
 }
 
 enum TextUploadError: Error {
@@ -14,6 +15,7 @@ enum TextUploadError: Error {
     case networkError(Error)
     case invalidResponse
     case serverError(Int)
+    case missingAPIKey
 }
 
 class ImageUploadService {
@@ -28,6 +30,11 @@ class ImageUploadService {
     
     struct MemeResponse: Codable {
         let url: String  // The JSON key you're expecting to receive
+    }
+    
+    // Function to fetch API key from environment variables
+    func getAPIKey() -> String? {
+        return ProcessInfo.processInfo.environment["API_KEY"]
     }
     
     // MARK: - Drawing Export Methods
@@ -74,6 +81,12 @@ class ImageUploadService {
         request.httpMethod = "POST"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         
+        if let apiKey = getAPIKey() {
+                request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            } else {
+                throw ImageUploadError.missingAPIKey
+            }
+        
         var body = Data()
         body.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"file\"; filename=\"drawing.jpg\"\r\n".data(using: .utf8)!)
@@ -114,6 +127,12 @@ class ImageUploadService {
             request.httpMethod = "POST"
             request.setValue("multipart/form-data", forHTTPHeaderField: "Content-Type")
             
+            if let apiKey = getAPIKey() {
+                    request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+                } else {
+                    throw ImageUploadError.missingAPIKey
+                }
+            
             let boundary = "Boundary-\(UUID().uuidString)"
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
             
@@ -151,6 +170,12 @@ class ImageUploadService {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let apiKey = getAPIKey() {
+                request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            } else {
+                throw ImageUploadError.missingAPIKey
+            }
         
         let json: [String: Any] = ["text": text]
         let jsonData = try? JSONSerialization.data(withJSONObject: json)
